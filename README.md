@@ -1,3 +1,5 @@
+[![NuGet version](https://img.shields.io/nuget/v/Spearton.BFlat.Template.svg?style=flat-square)](https://www.nuget.org/packages/Spearton.BFlat.Template/)
+
 # Visual Studio-ready project template for BFLAT C#
 
 ## Where it works?
@@ -52,3 +54,5 @@
 3. **Path too long**
 	- Windows has a 260-character limit for paths. If your project is deep in folders, bflat or launchSettings might fail.
 	- Enable Long Paths in Windows Registry or move your project closer to the drive root (e.g., C:\Users\\..\source)
+	
+p.s. Icon for this template was generated in Google Gemini for free.
