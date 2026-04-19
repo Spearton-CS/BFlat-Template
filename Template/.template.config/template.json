@@ -1,0 +1,284 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Spearton-CS",
+  "classifications": [
+    "Console",
+    "Desktop",
+    "Windows",
+    "Linux",
+    "UEFI",
+    "BareBones",
+    "bflat",
+    "Native",
+    "NativeAOT"
+  ],
+  "name": "BFlat",
+  "defaultName": "BflatApp",
+  "preferNameDirectory": true,
+  "identity": "BFlat.Template",
+  "shortName": "bflat",
+  "description": "VisualStudio-ready BFLAT template with UI-based parameter set, F5 running and clean .csproj",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "icon": "icon.png",
+  "sourceName": "BFlatProject",
+  "primaryOutputs": [
+    {
+      "path": "Project.csproj"
+    },
+    {
+      "path": "Program.cs"
+    }
+  ],
+  "hints": {
+    "VSTemplateId": "BFlat.Template",
+    "ShowParameterPage": "true",
+    "PrimaryOutput": "Program.cs"
+  },
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "datatype": "choice",
+      "displayName": "Framework",
+      "description": "The target framework for the project.",
+      "choices": [
+        {
+          "choice": "net11.0",
+          "displayName": ".NET 11.0 (Preview, STS)"
+        },
+        {
+          "choice": "net10.0",
+          "displayName": ".NET 10.0 (LTS until 14 november 2028)"
+        },
+        {
+          "choice": "net9.0",
+          "displayName": ".NET 9.0 (STS until 10 november 2026)"
+        },
+        {
+          "choice": "net8.0",
+          "displayName": ".NET 8.0 (Support until 10 november 2026)"
+        },
+        {
+          "choice": "net7.0",
+          "displayName": ".NET 8.0 (Out of support)"
+        },
+        {
+          "choice": "net6.0",
+          "displayName": ".NET 6.0 (Out of support)"
+        }
+      ],
+      "defaultValue": "net10.0",
+      "replaces": "__FRAMEWORK",
+      "isVisible": true
+    },
+    "DoNotUseTopLevelStatements": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "",
+      "displayName": "Do not use top-level statements",
+      "isVisible": true
+    },
+    "OptimizationLevel": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "-Ot",
+          "displayName": "Speed",
+          "description": "Optimize for executing speed"
+        },
+        {
+          "choice": "-Os",
+          "displayName": "Size",
+          "description": "Optimize for binary size"
+        },
+        {
+          "choice": "-O0",
+          "displayName": "None",
+          "description": "Do not optimize"
+        },
+        {
+          "choice": "Auto",
+          "displayName": "Auto",
+          "description": "Can be optimized"
+        }
+      ],
+      "defaultValue": "-Os",
+      "displayName": "Optimization Level",
+      "replaces": "__OPT_LVL",
+      "isVisible": true
+    },
+    "BFlatStdLib": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "Zero",
+          "displayName": "Zero"
+        },
+        {
+          "choice": "DotNet",
+          "displayName": "DotNet"
+        },
+        {
+          "choice": "None",
+          "displayName": "None"
+        }
+      ],
+      "defaultValue": "Zero",
+      "description": "C# standard library to use",
+      "displayName": "BFlat StdLib",
+      "replaces": "__STD_LIB",
+      "isVisible": true
+    },
+    "BFlatTarget": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "Exe",
+          "displayName": "Console App"
+        },
+        {
+          "choice": "Shared",
+          "displayName": "Library"
+        },
+        {
+          "choice": "WinExe",
+          "displayName": "UI App"
+        }
+      ],
+      "defaultValue": "Exe",
+      "replaces": "__TARGET",
+      "isVisible": true
+    },
+    "OS": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "windows",
+          "displayName": "Windows"
+        },
+        {
+          "choice": "linux",
+          "displayName": "Linux"
+        },
+        {
+          "choice": "uefi",
+          "displayName": "UEFI"
+        }
+      ],
+      "defaultValue": "windows",
+      "replaces": "__OS",
+      "isVisible": true
+    },
+    "Arch": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "x86",
+          "displayName": "X86"
+        },
+        {
+          "choice": "x64",
+          "displayName": "X64"
+        },
+        {
+          "choice": "arm64",
+          "displayName": "ARM64"
+        }
+      ],
+      "defaultValue": "X64",
+      "replaces": "__ARCH",
+      "isVisible": true
+    },
+    "CustomDefines": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "",
+      "description": "Define conditional compilation symbol(s)",
+      "displayName": "Custom defines",
+      "replaces": "__DEFINES",
+      "isVisible": true
+    },
+    "Deterministic": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Produce deterministic outputs including timestamps",
+      "displayName": "Deterministic",
+      "replaces": "__DETERMINISTIC",
+      "isVisible": true
+    },
+    "NoReflection": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Disable support for reflection",
+      "displayName": "No reflection",
+      "replaces": "__NO_REFLECTION",
+      "isVisible": true
+    },
+    "NoStackTrace": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Disable support for textual stack traces",
+      "displayName": "No stacktrace",
+      "replaces": "__NO_STACKTRACE",
+      "isVisible": true
+    },
+    "NoGlobalization": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Disable support for globalization (use invariant mode)",
+      "displayName": "No globalization",
+      "replaces": "__NO_GLOBALIZATION",
+      "isVisible": true
+    },
+    "NoExceptionMessages": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Disable exception messages (DotNet StdLib only)",
+      "displayName": "No exception meesages",
+      //"isEnabled": "BFlatStdLib == 'DotNet'",
+      "replaces": "__NO_EXCEPTION_MESSAGES",
+      "isVisible": true
+    },
+    "SeparatePDB": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Separate debugging symbols (Linux)",
+      "displayName": "Separate PDB (Linux)",
+      //"isEnabled": "OS == 'linux'",
+      "replaces": "__SEPARATE_PDB",
+      "isVisible": true
+    },
+    "MStat": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Produce MSTAT and DGML files for size analysis",
+      "displayName": "Produce files for size analysis",
+      "replaces": "__MSTAT",
+      "isVisible": true
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [ ".template.config/**" ]
+        }
+      ]
+    }
+  ]
+}
