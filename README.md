@@ -2,6 +2,44 @@
 
 # Visual Studio-ready project template for BFLAT C#
 
+## Quick start
+
+### 1. Environment setup (PowerShell, requires restart terminals after complete)
+
+Create file with .ps1 with script below and run:
+```
+# Note: We use C:\bflat to avoid Permission Denied errors and path length issues. You can use any location.
+
+# Set your destination folder
+$p = "C:\bflat"
+
+# Create folder, download and extract
+mkdir $p -Force; cd $p
+curl -L -o bflat.zip https://github.com/bflattened/bflat/releases/download/v8.0.2/bflat-8.0.2-windows-x64.zip
+tar -xf bflat.zip -C $p
+
+# Set BFLAT_BIN variable
+[Environment]::SetEnvironmentVariable("BFLAT_BIN", $p, "User")
+
+# Add to User PATH (only if not already there)
+$oldPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($oldPath -notlike "*$p*") {
+    [Environment]::SetEnvironmentVariable("Path", "$oldPath;$p", "User")
+}
+
+Write-Host "Done! Please RESTART your terminals." -ForegroundColor Green
+```
+### 2. Install template (any command line)
+```
+dotnet new install Spearton.BFlat.Template
+```
+### 3. Create and run (any command line)
+```
+dotnet new bflat -n BFlatApp1
+cd BFlatApp1
+dotnet run
+```
+
 ## Where it works?
 
 * **Visual Studio 2026 (Create new project)**
@@ -19,7 +57,7 @@
 
 1. Download [BFLAT](https://github.com/bflattened/bflat) *anywhere* on your PC
 2. Add BFLAT directory as ```BFLAT_BIN``` in Environment Variables
-3. Add BFLAT directory or ```%BFLAT_BIN%```\bflat.exe in ```%PATH%``` Environment Variable
+3. Add BFLAT directory in ```%PATH%``` Environment Variable
 4. Download or clone this repo
 5. Run ```dotnet new install Template``` in root of this repository
 6. **Make sure that there's no warning or errors from dotnet**
