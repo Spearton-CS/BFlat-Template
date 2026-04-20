@@ -1,5 +1,5 @@
 //#if (DoNotUseTopLevelStatements)
-namespace BflatProject;
+namespace BFlatProject;
 
 internal static class Program
 {
