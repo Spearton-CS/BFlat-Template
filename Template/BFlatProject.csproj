@@ -22,7 +22,7 @@
 	<PropertyGroup>
 		<BFlatOptFlagRAW>__OPT_LVL</BFlatOptFlagRAW>
 		<BFlatOptFlag Condition="'BFlatOptFlagRAW' != 'Auto'">__OPT_LVL</BFlatOptFlag>
-		<BFlatOptFlag Condition="'BFlatOptFlagRAW' != 'Auto"></BFlatOptFlag>
+		<BFlatOptFlag Condition="'BFlatOptFlagRAW' == 'Auto"></BFlatOptFlag>
 		<BFlatOS>__OS</BFlatOS>
 		<BFlatArch>__ARCH</BFlatArch>
 		<BFlatTarget>__TARGET</BFlatTarget>
@@ -44,6 +44,9 @@
 		<BFlatNoExMsg Condition="'$(NoExceptionMessages)' == 'true'">--no-exception-messages</BFlatNoExMsg>
 		<BFlatPdb Condition="'$(SeparatePDB)' == 'true'">--separate-symbols</BFlatPdb>
 		<BFlatMstat Condition="'$(MStat)' == 'true'">--mstat</BFlatMstat>
+		
+		<BFlatOptFlag Condition="'$(Configuration)' == 'Debug'">-O0</BFlatOptFlag>
+		<BFlatNoStack Condition="'$(Configuration)' == 'Debug'"></BFlatNoStack>
 
 		<BFlatExe>bflat</BFlatExe>
 
@@ -74,21 +77,21 @@
 
 	<Target Name="GenerateLaunchSettings" BeforeTargets="BeforeBuild">
 		<PropertyGroup>
+			<ActualOutDir>$(ProjectDir)bin\$(Configuration)\$(TargetFramework)\</ActualOutDir>
+			<EscapedOutDir>$(ActualOutDir.Replace('\', '\\'))</EscapedOutDir>
+			
 			<LaunchSettingsFile>$(MSBuildProjectDirectory)\Properties\launchSettings.json</LaunchSettingsFile>
-			<LaunchSettingsContent>
-				{
-				"profiles": {
-				"BFlat_Native": {
-				"commandName": "Executable",
-				"executablePath": "$(MSBuildProjectDirectory.Replace('\', '\\'))\\bin\\Debug\\$(TargetFramework)\\$(TargetName)$(Ext)",
-				"workingDirectory": "$(MSBuildProjectDirectory.Replace('\', '\\'))\\bin\\Debug\\$(TargetFramework)\\",
-				"nativeDebugging": true
-				}
-				}
-				}
-			</LaunchSettingsContent>
+			<LaunchSettingsContent><![CDATA[{
+	"profiles": {
+		"BFlat_Native": {
+			"commandName": "Executable",
+			"executablePath": "$(EscapedOutDir)$(TargetName)$(Ext)",
+			"workingDirectory": "$(EscapedOutDir)",
+			"nativeDebugging": true
+		}
+	}
+}]]></LaunchSettingsContent>
 		</PropertyGroup>
-
 		<MakeDir Directories="$(MSBuildProjectDirectory)\Properties" Condition="!Exists('$(MSBuildProjectDirectory)\Properties')" />
 		<WriteLinesToFile File="$(LaunchSettingsFile)" Lines="$(LaunchSettingsContent)" Overwrite="true" WriteOnlyWhenDifferent="true" />
 	</Target>

@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<PackageId>Spearton.BFlat.Template</PackageId>
 		<PackageType>Template</PackageType>
-		<Version>1.0.2</Version>
+		<Version>1.0.3</Version>
 		<Authors>Spearton-CS</Authors>
 		<Description>VisualStudio-ready BFLAT template with UI parameters, Intellisense and F5 support.</Description>
 		<RepositoryUrl>https://github.com/Spearton-CS/BFlat-Template</RepositoryUrl>
@@ -16,6 +16,8 @@
 		1. Updated README.md and fixed namespace in Program.cs
 		2. Updated SEO tags (+zerolib, uefi, nolib, nonelib, windows, linux, barebones)
 		3. Package is deterministic now.
+		4. Fixed .csproj of template for Debug-sensitivity (OptFlag set to -O0, StackTrace be included)
+		5. Fixed .csproj of template for correct and formated launchSettings.json generation
 		</PackageReleaseNotes>
 
 		<Deterministic>true</Deterministic>
