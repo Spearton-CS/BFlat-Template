@@ -20,14 +20,15 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<BFlatOptFlagRAW>__OPT_LVL</BFlatOptFlagRAW>
-		<BFlatOptFlag Condition="'BFlatOptFlagRAW' != 'Auto'">__OPT_LVL</BFlatOptFlag>
-		<BFlatOptFlag Condition="'BFlatOptFlagRAW' == 'Auto"></BFlatOptFlag>
+		<BFlatOptFlag>__OPT_LVL</BFlatOptFlag>
 		<BFlatOS>__OS</BFlatOS>
 		<BFlatArch>__ARCH</BFlatArch>
 		<BFlatTarget>__TARGET</BFlatTarget>
-		<BFlatDefines>__DEFINES</BFlatDefines>
+		<BFlatDefines>BFLAT;NATIVEAOT</BFlatDefines>
+		<BFlatDefines Condition="'__DEFINES' != ''">$(BFlatDefines);__DEFINES</BFlatDefines>
 		<BFlatStdLib>__STD_LIB</BFlatStdLib>
+		
+		<BFlatExtraArgs>__EXTRA_ARGS</BFlatExtraArgs>
 
 		<Deterministic>__DETERMINISTIC</Deterministic>
 		<NoReflection>__NO_REFLECTION</NoReflection>
@@ -36,17 +37,9 @@
 		<NoExceptionMessages>__NO_EXCEPTION_MESSAGES</NoExceptionMessages>
 		<SeparatePDB>__SEPARATE_PDB</SeparatePDB>
 		<MStat>__MSTAT</MStat>
-
-		<BFlatNoReflect Condition="'$(NoReflection)' == 'true'">--no-reflection</BFlatNoReflect>
-		<BFlatNoStack Condition="'$(NoStackTrace)' == 'true'">--no-stacktrace-data</BFlatNoStack>
-		<BFlatDet Condition="'$(Deterministic)' == 'true'">--deterministic</BFlatDet>
-		<BFlatGlob Condition="'$(NoGlobalization)' == 'true'">--no-globalization</BFlatGlob>
-		<BFlatNoExMsg Condition="'$(NoExceptionMessages)' == 'true'">--no-exception-messages</BFlatNoExMsg>
-		<BFlatPdb Condition="'$(SeparatePDB)' == 'true'">--separate-symbols</BFlatPdb>
-		<BFlatMstat Condition="'$(MStat)' == 'true'">--mstat</BFlatMstat>
 		
 		<BFlatOptFlag Condition="'$(Configuration)' == 'Debug'">-O0</BFlatOptFlag>
-		<BFlatNoStack Condition="'$(Configuration)' == 'Debug'"></BFlatNoStack>
+		<NoStackTrace Condition="'$(Configuration)' == 'Debug'"></NoStackTrace>
 
 		<BFlatExe>bflat</BFlatExe>
 
@@ -54,11 +47,18 @@
 		<Ext Condition="'$(BFlatOS)' == 'uefi'">.efi</Ext>
 		<Ext Condition="'$(BFlatOS)' == 'linux'"></Ext>
 	</PropertyGroup>
+	
+	<PropertyGroup>
+		<BFlatDefines Condition="'$(NoReflection)'">$(BFlatDefines);NOREFLECTION</BFlatDefines>
+		<BFlatDefines Condition="'$(NoStackTrace)'">$(BFlatDefines);NOSTACKTRACE</BFlatDefines>
+		<BFlatDefines Condition="'$(NoGlobalization)'">$(BFlatDefines);NOGLOBALIZATION</BFlatDefines>
+		<BFlatDefines Condition="'$(NoExceptionMessages)'">$(BFlatDefines);NOEXCEPTIONMESSAGES</BFlatDefines>
+		<BFlatDefines>$(BFlatDefines);STDLIB_$(BFlatStdLib.ToUpper())</BFlatDefines>
+	</PropertyGroup>
 
 	<PropertyGroup>
 		<ActualRefDll Condition="'$(BFlatStdLib)' == 'Zero'">zerolib.dll</ActualRefDll>
 		<ActualRefDll Condition="'$(BFlatStdLib)' == 'DotNet'">System.Runtime.dll</ActualRefDll>
-
 		<BFlatRefLib Condition="'$(BFLAT_BIN)' != '' and '$(ActualRefDll)' != ''">$(BFLAT_BIN)\ref\$(ActualRefDll)</BFlatRefLib>
 	</PropertyGroup>
 
@@ -103,18 +103,33 @@
 		</ItemGroup>
 
 		<PropertyGroup>
-			<TargetFlag>--target $(BFlatTarget)</TargetFlag>
+			<TargetArg>--target $(BFlatTarget)</TargetArg>
 			<CompileArgs>@(SourceFiles->'"%(FullPath)"', ' ')</CompileArgs>
 			<RefArgs Condition="'@(BFlatReferences)' != ''">@(BFlatReferences->'-r "%(FullPath)"', ' ')</RefArgs>
-
 			<OutputExe>"$(OutDir)$(TargetName)$(Ext)"</OutputExe>
+			
+			<OptArg Condition="'$(BFlatOptFlag)' != 'Auto'">$(BFlatOptFlag)</OptArg>
+			<OptArg Condition="'$(BFlatOptFlag)' == 'Auto'"></OptArg>
+			
+			<NoReflectArg Condition="'$(NoReflection)' == 'true'">--no-reflection</NoReflectArg>
+			<NoStackTraceArg Condition="'$(NoStackTrace)' == 'true'">--no-stacktrace-data</NoStackTraceArg>
+			<DeterministicArg Condition="'$(Deterministic)' == 'true'">--deterministic</DeterministicArg>
+			<NoGlobArg Condition="'$(NoGlobalization)' == 'true'">--no-globalization</NoGlobArg>
+			<NoExMsgArg Condition="'$(NoExceptionMessages)' == 'true'">--no-exception-messages</NoExMsgArg>
+			<SeparatePdbArg Condition="'$(SeparatePDB)' == 'true'">--separate-symbols</SeparatePdbArg>
+			<MstatArg Condition="'$(MStat)' == 'true'">--mstat</MstatArg>
+			<DefineArgs>$(BFlatDefines.Replace(';', ' -d '))</DefineArgs>
 
-			<BFlatCmd>$(BFlatExe) build --stdlib $(BFlatStdLib) $(BFlatOptFlag) $(TargetFlag) --os $(BFlatOS) --arch $(BFlatArch) $(BFlatNoReflect) $(BFlatNoStack) $(BFlatDet) $(BFlatGlob) $(BFlatNoExMsg) $(BFlatPdb) $(BFlatMstat) $(RefArgs) -o $(OutputExe) $(CompileArgs)</BFlatCmd>
+			<BFlatCmd>$(BFlatExe) build --stdlib $(BFlatStdLib) $(OptArg) $(TargetArg) --os $(BFlatOS) --arch $(BFlatArch) -d $(DefineArgs) $(NoReflectArg) $(NoStackTraceArg) $(DeterministicArg) $(NoGlobArg) $(NoExMsgArg) $(SeparatePdbArg) $(MstatArg) $(RefArgs) -o $(OutputExe) $(BFlatExtraArgs) $(CompileArgs)</BFlatCmd>
 		</PropertyGroup>
 
 		<Message Importance="high" Text="!!! BFLAT COMPILING: $(BFlatCmd)" />
 		<MakeDir Directories="$(OutDir)" />
 		<Exec Command="$(BFlatCmd)" WorkingDirectory="$(ProjectDir)" />
+	</Target>
+	
+	<Target Name="BFlatClean" AfterTargets="Clean">
+		<Delete Files="$(OutDir)$(TargetName)$(Ext)" />
 	</Target>
 
 	<Target Name="_CheckForInvalidConfigurationAndPlatform" />

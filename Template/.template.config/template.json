@@ -248,7 +248,6 @@
       "defaultValue": "false",
       "description": "Disable exception messages (DotNet StdLib only)",
       "displayName": "No exception meesages",
-      //"isEnabled": "BFlatStdLib == 'DotNet'",
       "replaces": "__NO_EXCEPTION_MESSAGES",
       "isVisible": true
     },
@@ -258,7 +257,6 @@
       "defaultValue": "false",
       "description": "Separate debugging symbols (Linux)",
       "displayName": "Separate PDB (Linux)",
-      //"isEnabled": "OS == 'linux'",
       "replaces": "__SEPARATE_PDB",
       "isVisible": true
     },
@@ -270,13 +268,25 @@
       "displayName": "Produce files for size analysis",
       "replaces": "__MSTAT",
       "isVisible": true
-    }
+    },
+	"ExtraArgs": {
+		"type": "parameter",
+		"datatype": "string",
+		"defaultValue": "",
+		"description": "You can type here extra params like a --feature. See all on https://flattened.net",
+		"displayName": "Extra build args",
+		"replaces": "__EXTRA_ARGS",
+		"isVisible": true
+	}
   },
   "sources": [
     {
       "modifiers": [
         {
-          "exclude": [ ".template.config/**" ]
+          "exclude":
+		  [
+			".template.config/**"
+		  ]
         }
       ]
     }
