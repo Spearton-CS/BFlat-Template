@@ -38,14 +38,24 @@
 		<SeparatePDB>__SEPARATE_PDB</SeparatePDB>
 		<MStat>__MSTAT</MStat>
 		
-		<BFlatOptFlag Condition="'$(Configuration)' == 'Debug'">-O0</BFlatOptFlag>
-		<NoStackTrace Condition="'$(Configuration)' == 'Debug'"></NoStackTrace>
+		<BFlatOptFlag Condition="'$(Configuration.ToLower())' == 'debug'">-O0</BFlatOptFlag>
+		<NoStackTrace Condition="'$(Configuration.ToLower())' == 'debug'">False</NoStackTrace>
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		<BFlatExeDir Condition="'$(BFLAT_BIN)' != ''">$(BFLAT_BIN.TrimEnd('\'))\</BFlatExeDir>
+		<BFlatExe Condition="'$(BFlatExeDir)' != ''">$(BFlatExeDir)bflat.exe</BFlatExe>
+		<BFlatExe Condition="'$(BFlatExe)' == ''">bflat</BFlatExe>
+	</PropertyGroup>
 
-		<BFlatExe>bflat</BFlatExe>
+	<PropertyGroup>
+		<Ext Condition="('$(OutputType.ToLower())' == 'exe' or '$(OutputType.ToLower())' == 'winexe') and '$(BFlatOS.ToLower())' == 'windows'">.exe</Ext>
+		<Ext Condition="('$(OutputType.ToLower())' == 'exe' or '$(OutputType.ToLower())' == 'winexe') and '$(BFlatOS.ToLower())' == 'uefi'">.efi</Ext>
+		<Ext Condition="('$(OutputType.ToLower())' == 'exe' or '$(OutputType.ToLower())' == 'winexe') and '$(BFlatOS.ToLower())' == 'linux'"></Ext>
 
-		<Ext Condition="'$(BFlatOS)' == 'windows'">.exe</Ext>
-		<Ext Condition="'$(BFlatOS)' == 'uefi'">.efi</Ext>
-		<Ext Condition="'$(BFlatOS)' == 'linux'"></Ext>
+		<Ext Condition="'$(OutputType.ToLower())' == 'library' and '$(BFlatOS.ToLower())' == 'windows'">.dll</Ext>
+		<Ext Condition="'$(OutputType.ToLower())' == 'library' and '$(BFlatOS.ToLower())' == 'linux'">.so</Ext>
+		<Ext Condition="'$(OutputType.ToLower())' == 'library' and '$(BFlatOS.ToLower())' == 'uefi'">.efi</Ext>
 	</PropertyGroup>
 	
 	<PropertyGroup>
@@ -57,13 +67,21 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<ActualRefDll Condition="'$(BFlatStdLib)' == 'Zero'">zerolib.dll</ActualRefDll>
-		<ActualRefDll Condition="'$(BFlatStdLib)' == 'DotNet'">System.Runtime.dll</ActualRefDll>
+		<ActualRefDll Condition="'$(BFlatStdLib.ToLower())' == 'zero'">zerolib.dll</ActualRefDll>
+		<ActualRefDll Condition="'$(BFlatStdLib.ToLower())' == 'dotnet'">System.Runtime.dll</ActualRefDll>
 		<BFlatRefLib Condition="'$(BFLAT_BIN)' != '' and '$(ActualRefDll)' != ''">$(BFLAT_BIN)\ref\$(ActualRefDll)</BFlatRefLib>
 	</PropertyGroup>
 
 	<Target Name="ResolveBFlatPaths" BeforeTargets="BeforeBuild;BFlatNativeBuild">
-		<Warning Condition="'$(BFlatBinDir)' == ''" Text="bflat.exe not found in %PATH%. IntelliSense and Build might fail." />
+		<Error Condition="'$(BFLAT_BIN)' != '' and !Exists('$(BFlatExe)')"
+			   Text="BFLAT_BIN is set, but bflat.exe was not found at: $(BFlatExe)" />
+
+		<Exec Command="$(BFlatExe) -h" Condition="'$(BFLAT_BIN)' == ''" ContinueOnError="true" IgnoreExitCode="true">
+			<Output TaskParameter="ExitCode" PropertyName="BFlatCheckCode"/>
+		</Exec>
+
+		<Warning Condition="'$(BFLAT_BIN)' == '' and '$(BFlatCheckCode)' != '0'"
+				 Text="bflat not found in PATH. Please install it or set BFLAT_BIN environment variable." />
 	</Target>
 
 	<ItemGroup>
@@ -75,12 +93,17 @@
 
 	<Target Name="CoreCompile" />
 
-	<Target Name="GenerateLaunchSettings" BeforeTargets="BeforeBuild">
+	<Target Name="HandleLaunchSettings" BeforeTargets="BeforeBuild">
 		<PropertyGroup>
+			<LaunchSettingsFile>$(MSBuildProjectDirectory)\Properties\launchSettings.json</LaunchSettingsFile>
+		</PropertyGroup>
+
+		<Delete Files="$(LaunchSettingsFile)"
+				Condition="'$(OutputType.ToLower())' == 'library' and Exists('$(LaunchSettingsFile)')" />
+
+		<PropertyGroup Condition="'$(OutputType.ToLower())' != 'library'">
 			<ActualOutDir>$(ProjectDir)bin\$(Configuration)\$(TargetFramework)\</ActualOutDir>
 			<EscapedOutDir>$(ActualOutDir.Replace('\', '\\'))</EscapedOutDir>
-			
-			<LaunchSettingsFile>$(MSBuildProjectDirectory)\Properties\launchSettings.json</LaunchSettingsFile>
 			<LaunchSettingsContent><![CDATA[{
 	"profiles": {
 		"BFlat_Native": {
@@ -92,8 +115,15 @@
 	}
 }]]></LaunchSettingsContent>
 		</PropertyGroup>
-		<MakeDir Directories="$(MSBuildProjectDirectory)\Properties" Condition="!Exists('$(MSBuildProjectDirectory)\Properties')" />
-		<WriteLinesToFile File="$(LaunchSettingsFile)" Lines="$(LaunchSettingsContent)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+
+		<MakeDir Directories="$(MSBuildProjectDirectory)\Properties"
+				 Condition="'$(OutputType.ToLower())' != 'library' and !Exists('$(MSBuildProjectDirectory)\Properties')" />
+		
+		<WriteLinesToFile File="$(LaunchSettingsFile)"
+						  Lines="$(LaunchSettingsContent)"
+						  Overwrite="true"
+						  WriteOnlyWhenDifferent="true"
+						  Condition="'$(OutputType.ToLower())' != 'library'" />
 	</Target>
 
 	<Target Name="BFlatNativeBuild" BeforeTargets="Build">
@@ -103,21 +133,21 @@
 		</ItemGroup>
 
 		<PropertyGroup>
-			<TargetArg>--target $(BFlatTarget)</TargetArg>
+			<TargetArg>--target $(BFlatTarget.ToLower().Replace('library', 'shared'))</TargetArg>
 			<CompileArgs>@(SourceFiles->'"%(FullPath)"', ' ')</CompileArgs>
 			<RefArgs Condition="'@(BFlatReferences)' != ''">@(BFlatReferences->'-r "%(FullPath)"', ' ')</RefArgs>
 			<OutputExe>"$(OutDir)$(TargetName)$(Ext)"</OutputExe>
 			
-			<OptArg Condition="'$(BFlatOptFlag)' != 'Auto'">$(BFlatOptFlag)</OptArg>
-			<OptArg Condition="'$(BFlatOptFlag)' == 'Auto'"></OptArg>
+			<OptArg Condition="'$(BFlatOptFlag.ToLower())' != 'auto'">$(BFlatOptFlag)</OptArg>
+			<OptArg Condition="'$(BFlatOptFlag.ToLower())' == 'auto'"></OptArg>
 			
-			<NoReflectArg Condition="'$(NoReflection)' == 'true'">--no-reflection</NoReflectArg>
-			<NoStackTraceArg Condition="'$(NoStackTrace)' == 'true'">--no-stacktrace-data</NoStackTraceArg>
-			<DeterministicArg Condition="'$(Deterministic)' == 'true'">--deterministic</DeterministicArg>
-			<NoGlobArg Condition="'$(NoGlobalization)' == 'true'">--no-globalization</NoGlobArg>
-			<NoExMsgArg Condition="'$(NoExceptionMessages)' == 'true'">--no-exception-messages</NoExMsgArg>
-			<SeparatePdbArg Condition="'$(SeparatePDB)' == 'true'">--separate-symbols</SeparatePdbArg>
-			<MstatArg Condition="'$(MStat)' == 'true'">--mstat</MstatArg>
+			<NoReflectArg Condition="'$(NoReflection)'">--no-reflection</NoReflectArg>
+			<NoStackTraceArg Condition="'$(NoStackTrace)'">--no-stacktrace-data</NoStackTraceArg>
+			<DeterministicArg Condition="'$(Deterministic)'">--deterministic</DeterministicArg>
+			<NoGlobArg Condition="'$(NoGlobalization)'">--no-globalization</NoGlobArg>
+			<NoExMsgArg Condition="'$(NoExceptionMessages)'">--no-exception-messages</NoExMsgArg>
+			<SeparatePdbArg Condition="'$(SeparatePDB)'">--separate-symbols</SeparatePdbArg>
+			<MstatArg Condition="'$(MStat)'">--mstat</MstatArg>
 			<DefineArgs>$(BFlatDefines.Replace(';', ' -d '))</DefineArgs>
 
 			<BFlatCmd>$(BFlatExe) build --stdlib $(BFlatStdLib) $(OptArg) $(TargetArg) --os $(BFlatOS) --arch $(BFlatArch) -d $(DefineArgs) $(NoReflectArg) $(NoStackTraceArg) $(DeterministicArg) $(NoGlobArg) $(NoExMsgArg) $(SeparatePdbArg) $(MstatArg) $(RefArgs) -o $(OutputExe) $(BFlatExtraArgs) $(CompileArgs)</BFlatCmd>
